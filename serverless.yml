@@ -1,0 +1,20 @@
+service: virtual-solar-smart-meter
+
+package:
+  include:
+    - config.json
+    - locales/**
+    - src/**
+
+provider:
+  name: aws
+  stage: dev
+  runtime: nodejs16.x
+  versionFunctions: false
+  environment:
+    APP_ID: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    POWER_METER_PROFILE: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+    SOLAR_PANEL_PROFILE: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+functions:
+  smartapp:
+    handler: src/index.handle
