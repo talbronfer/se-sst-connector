@@ -9,11 +9,13 @@
   "description": "See your solar production and house consumption from your SolarEdge system.",
   "singleInstance": true,
   "webhookSmartApp": {
-    "targetUrl": "{YOUR SERVER URL}"
+    "targetUrl": "https://se-sst-connector.onrender.com"
   },
   "oauth": {
     "clientName": "SolarEdge Home",
     "scope": [
+      "r:devices:*",
+      "i:deviceprofiles:*"
     ]
   }
 }

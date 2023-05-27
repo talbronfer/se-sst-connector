@@ -16,6 +16,7 @@ module.exports = async (context, _) => {
 	let end = moment();
 	let energyResponse, powerResponse;
 	let start = moment().subtract(15, 'minutes');
+	console.log('Starting update...');
 	try {
 		energyResponse = await getEnergyDelta(start, end);
 		powerResponse = await getPowerAverage(start, end);
