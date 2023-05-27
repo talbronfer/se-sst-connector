@@ -1,14 +1,14 @@
 {
-  "name": "virtual-solar-smart-meter",
+  "name": "se-sst-integration",
   "version": "1.0.0",
-  "description": "Creates virtual devices that integrate with SmartThings Energy",
+  "description": "Displays solar production and house consumption for SolarEdge Home sites",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
     "deploy": "serverless deploy",
     "test": "jest"
   },
-  "author": "SmartThings",
+  "author": "SolarEdge",
   "license": "Apache-2.0",
   "dependencies": {
     "@smartthings/smartapp": "^4.2.0",

@@ -1,0 +1,19 @@
+{
+  "appName": "solaredge-home",
+  "appType": "WEBHOOK_SMART_APP",
+  "classifications": [
+    "CONNECTED_SERVICE",
+    "DEVICE"
+  ],
+  "displayName": "SolarEdge Home",
+  "description": "See your solar production and house consumption from your SolarEdge system.",
+  "singleInstance": true,
+  "webhookSmartApp": {
+    "targetUrl": "{YOUR SERVER URL}"
+  },
+  "oauth": {
+    "clientName": "SolarEdge Home",
+    "scope": [
+    ]
+  }
+}

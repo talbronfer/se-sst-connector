@@ -1,6 +1,8 @@
+const moment = require('moment');
 const {housePower} = require('../lib/house-model')
 const {solarPower} = require('../lib/solar-model')
 const {getPowerMeter, getSolarPanel} = require('../lib/devices')
+const { getEnergyDelta, getPowerAverage } = require('../lib/monitoring-api')
 
 /**
  * Send events for the power consumption and energy usage for the house, solar panels, and grid. The power consumption
@@ -11,24 +13,28 @@ const {getPowerMeter, getSolarPanel} = require('../lib/devices')
  * @returns {Promise<void>}
  */
 module.exports = async (context, _) => {
-	// Calculate the start and end times for the period of time to report on.
-	const periodMinutes = context.configNumberValue('period')
-	const end = new Date()
-	const start = new Date(end.getTime() - (periodMinutes * 60 * 1000))
-	const mid = new Date(Math.round((end.getTime() + start.getTime()) / 2))
+	let end = moment();
+	let energyResponse, powerResponse;
+	let start = moment().subtract(15, 'minutes');
+	try {
+		energyResponse = await getEnergyDelta(start, end);
+		powerResponse = await getPowerAverage(start, end);
+	}
 
-	// Retrieve the simulated house and solar panel average power for the period
-	const timeZone = context.configStringValue('timeZone')
-	const houseWatts = housePower(mid, timeZone, context.configNumberValue('maxHousePower'))
-	const solarWatts = solarPower(mid, timeZone, context.configNumberValue('maxSolarPower'))
-	const fromGridWatts = Math.max(houseWatts - solarWatts, 0)
-	const toGridWatts = Math.max(solarWatts - houseWatts, 0);
+	catch (e) {
+		console.log(e);
+	}
 
-	// Calculate the energy usage for the period
-	const houseDeltaEnergy = Math.round(houseWatts * periodMinutes / 60);
-	const solarDeltaEnergy = Math.round(solarWatts * periodMinutes / 60);
-	const fromGridDeltaEnergy = Math.round(fromGridWatts * periodMinutes / 60)
-	const toGridDeltaEnergy = Math.round(toGridWatts * periodMinutes / 60)
+	const data = {
+		productionEnergyDelta: energyResponse.data.energyDetails.meters.find((i) => i.type == "Production").values[0].value,
+		consumptionEnergyDelta: energyResponse.data.energyDetails.meters.find((i) => i.type == "Consumption").values[0].value,
+		productionPowerAverage: powerResponse.data.powerDetails.meters.find((i) => i.type == "Production").values[0].value,
+		consumptionPowerAverage: powerResponse.data.powerDetails.meters.find((i) => i.type == 'Consumption').values[0].value,
+		importEnergyDelta: energyResponse.data.energyDetails.meters.find((i) => i.type == "Purchased").values[0].value,
+		importPowerAverage: powerResponse.data.powerDetails.meters.find((i) => i.type == 'Purchased').values[0].value,
+		exportEnergyDelta: energyResponse.data.energyDetails.meters.find((i) => i.type == 'FeedIn').values[0].value,
+		exportPowerAverage: powerResponse.data.powerDetails.meters.find((i) => i.type == 'FeedIn').values[0].value,
+	}
 
 	// Get the house power and solar panel devices, which are created when the app is first installed.
 	const [powerMeter, solarPanel] = await Promise.all([
@@ -36,9 +42,6 @@ module.exports = async (context, _) => {
 		getSolarPanel(context)
 	])
 
-	// Get the current status of the power meter and solar panel devices. This call is necessary only in order to calculate
-	// the monthly and total all-time energy usage. It may not be necessary if that information is provided by the
-	// devices themselves.
 	const [powerMeterStatus, solarPanelStatus] = await Promise.all([
 		context.api.devices.getStatus(powerMeter.deviceId),
 		context.api.devices.getStatus(solarPanel.deviceId)
@@ -51,14 +54,14 @@ module.exports = async (context, _) => {
 			component: 'main',
 			capability: 'powerMeter',
 			attribute: 'power',
-			value: houseWatts,
+			value: data.consumptionPowerAverage,
 			unit: 'W'
 		},
 		{
 			component: 'main',
 			capability: 'energyMeter',
 			attribute: 'energy',
-			value: powerMeterStatus.components.main.energyMeter.energy.value + (fromGridDeltaEnergy / 1000),
+			value: powerMeterStatus.components.main.energyMeter.energy.value + data.consumptionEnergyDelta,
 			unit: 'kWh'
 		},
 		{
@@ -66,9 +69,9 @@ module.exports = async (context, _) => {
 			capability: 'powerConsumptionReport',
 			attribute: 'powerConsumption',
 			value: {
-				power: fromGridWatts,
-				energy: powerMeterStatus.components.main.powerConsumptionReport.powerConsumption.value.energy + fromGridDeltaEnergy,
-				deltaEnergy: fromGridDeltaEnergy,
+				power: importPowerAverage,
+				energy: powerMeterStatus.components.main.powerConsumptionReport.powerConsumption.value.energy + data.importEnergyDelta,
+				deltaEnergy: data.importEnergyDelta,
 				start: start.toISOString(),
 				end: end.toISOString()
 			}
@@ -77,7 +80,7 @@ module.exports = async (context, _) => {
 			component: 'component1',
 			capability: 'energyMeter',
 			attribute: 'energy',
-			value: powerMeterStatus.components.component1.energyMeter.energy.value + (toGridDeltaEnergy / 1000),
+			value: powerMeterStatus.components.component1.energyMeter.energy.value + data.exportEnergyDelta,
 			unit: 'kWh'
 		},
 		{
@@ -85,9 +88,9 @@ module.exports = async (context, _) => {
 			capability: 'powerConsumptionReport',
 			attribute: 'powerConsumption',
 			value: {
-				power:toGridWatts,
-				energy: powerMeterStatus.components.component1.powerConsumptionReport.powerConsumption.value.energy + toGridDeltaEnergy,
-				deltaEnergy: toGridDeltaEnergy,
+				power: data.exportPowerAverage,
+				energy: powerMeterStatus.components.component1.powerConsumptionReport.powerConsumption.value.energy + data.exportEnergyDelta,
+				deltaEnergy: data.exportEnergyDelta,
 				start: start.toISOString(),
 				end: end.toISOString()
 			}
@@ -96,7 +99,7 @@ module.exports = async (context, _) => {
 			component: 'component2',
 			capability: 'energyMeter',
 			attribute: 'energy',
-			value: powerMeterStatus.components.component2.energyMeter.energy.value + (houseDeltaEnergy / 1000),
+			value: powerMeterStatus.components.component2.energyMeter.energy.value + data.consumptionEnergyDelta,
 			unit: 'kWh'
 		},
 		{
@@ -104,9 +107,9 @@ module.exports = async (context, _) => {
 			capability: 'powerConsumptionReport',
 			attribute: 'powerConsumption',
 			value: {
-				power: houseWatts,
-				energy: powerMeterStatus.components.component2.powerConsumptionReport.powerConsumption.value.energy + houseDeltaEnergy,
-				deltaEnergy: houseDeltaEnergy,
+				power: data.consumptionPowerAverage,
+				energy: powerMeterStatus.components.component2.powerConsumptionReport.powerConsumption.value.energy + data.consumptionEnergyDelta,
+				deltaEnergy: data.consumptionEnergyDelta,
 				start: start.toISOString(),
 				end: end.toISOString()
 			}
@@ -119,14 +122,14 @@ module.exports = async (context, _) => {
 			component: 'main',
 			capability: 'powerMeter',
 			attribute: 'power',
-			value: solarWatts,
+			value: data.productionPowerAverage,
 			unit: 'W'
 		},
 		{
 			component: 'main',
 			capability: 'energyMeter',
 			attribute: 'energy',
-			value: solarPanelStatus.components.main.energyMeter.energy.value + (solarDeltaEnergy / 1000),
+			value: solarPanelStatus.components.main.energyMeter.energy.value + data.productionEnergyDelta,
 			unit: 'kWh'
 		},
 		{
@@ -136,8 +139,8 @@ module.exports = async (context, _) => {
 			value: {
 				power: solarWatts,
 				energy: (powerMeterStatus.components.main.powerConsumptionReport ?
-					powerMeterStatus.components.main.powerConsumptionReport.powerConsumption.value.energy : 0) + solarDeltaEnergy,
-				deltaEnergy: solarDeltaEnergy,
+					powerMeterStatus.components.main.powerConsumptionReport.powerConsumption.value.energy : 0) + data.productionEnergyDelta,
+				deltaEnergy: productionEnergyDelta,
 				start: start.toISOString(),
 				end: end.toISOString()
 			}
@@ -150,6 +153,6 @@ module.exports = async (context, _) => {
 		context.api.devices.createEvents(solarPanel.deviceId, solarPanelEvents)
 	])
 
-	console.log(`${end.toISOString()} - ${context.installedAppId}: houseWatts: ${houseWatts}, solarWatts: ${solarWatts}, fromGridWatts: ${fromGridWatts}, toGridWatts: ${toGridWatts}`)
+	console.log(`${end.toISOString()} - ${context.installedAppId}: houseWatts: ${data.consumptionPowerAverage}, solarWatts: ${data.productionPowerAverage}, fromGridWatts: ${data.importEnergyDelta}, toGridWatts: ${dat.exportEnergyDelta}`)
 }
 
