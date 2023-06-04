@@ -154,6 +154,6 @@ module.exports = async (context, _) => {
 		context.api.devices.createEvents(solarPanel.deviceId, solarPanelEvents)
 	])
 
-	console.log(`${end.toISOString()} - ${context.installedAppId}: houseWatts: ${data.consumptionPowerAverage}, solarWatts: ${data.productionPowerAverage}, fromGridWatts: ${data.importEnergyDelta}, toGridWatts: ${dat.exportEnergyDelta}`)
+	console.log(`${end.toISOString()} - ${context.installedAppId}: houseWatts: ${data.consumptionPowerAverage}, solarWatts: ${data.productionPowerAverage}, fromGridWatts: ${data.importEnergyDelta}, toGridWatts: ${data.exportEnergyDelta}`)
 }
 
