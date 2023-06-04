@@ -1,8 +1,8 @@
 {
     "name": "House Power Meter",
     "metadata": {
-        "vid": "STES-1-PV-{YOUR_APPROVED_VID}",
-        "mnmn": "{YOUR MNMN}",
+        "vid": "STES-1-PV-SEDG",
+        "mnmn": "SEDG",
         "ocfDeviceType": "x.com.st.d.energymeter"
     },
     "preferences": [],
@@ -33,7 +33,7 @@
             ],
             "categories": [
                 {
-                    "name": "PowerMeter",
+                    "name": "CurbPowerMeter",
                     "categoryType": "manufacturer"
                 }
             ]
@@ -54,7 +54,7 @@
             ],
             "categories": [
                 {
-                    "name": "PowerMeter",
+                    "name": "CurbPowerMeter",
                     "categoryType": "manufacturer"
                 }
             ]
@@ -75,7 +75,7 @@
             ],
             "categories": [
                 {
-                    "name": "PowerMeter",
+                    "name": "CurbPowerMeter",
                     "categoryType": "manufacturer"
                 }
             ]

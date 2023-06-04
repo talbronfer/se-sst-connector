@@ -7,7 +7,7 @@ const client = axios.create({ baseUrl : 'https://monitoringapi.solaredge.com'  }
 module.exports.getEnergyDelta = (start,end) => {
     start = start.format('yyyy-MM-DD hh:mm:ss');
     end = end.format('yyyy-MM-DD hh:mm:ss');
-    return axios.get(`https://monitoringapi.solaredge.com/site/${SITE_ID}}/energyDetails`, { params: {
+    return axios.get(`https://monitoringapi.solaredge.com/site/${SITE_ID}/energyDetails`, { params: {
         startTime: start,
         endTime: end,
         api_key: API_KEY

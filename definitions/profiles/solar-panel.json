@@ -1,8 +1,8 @@
 {
   "name": "Solar Panel",
   "metadata": {
-    "vid": "STES-1-PV-{YOUR_APPROVED_VID}",
-    "mnmn": "{YOUR MNMN}",
+    "vid": "STES-1-PV-SEDG",
+    "mnmn": "SEDG",
     "ocfDeviceType": "x.com.st.d.solarPanel"
   },
   "preferences": [],
