@@ -14,27 +14,26 @@ const { getEnergyDelta, getPowerAverage } = require('../lib/monitoring-api')
  */
 module.exports = async (context, _) => {
 	let end = moment();
-	let energyResponse, powerResponse;
+	let energyResponse, powerResponse, data;
 	let start = moment().subtract(15, 'minutes');
 	console.log('Starting update...');
 	try {
 		energyResponse = await getEnergyDelta(start, end);
 		powerResponse = await getPowerAverage(start, end);
+		data = {
+			productionEnergyDelta: energyResponse.data.energyDetails.meters.find((i) => i.type == "Production").values[0]?.value,
+			consumptionEnergyDelta: energyResponse.data.energyDetails.meters.find((i) => i.type == "Consumption").values[0]?.value,
+			productionPowerAverage: powerResponse.data.powerDetails.meters.find((i) => i.type == "Production").values[0]?.value,
+			consumptionPowerAverage: powerResponse.data.powerDetails.meters.find((i) => i.type == 'Consumption').values[0]?.value,
+			importEnergyDelta: energyResponse.data.energyDetails.meters.find((i) => i.type == "Purchased").values[0]?.value,
+			importPowerAverage: powerResponse.data.powerDetails.meters.find((i) => i.type == 'Purchased').values[0]?.value,
+			exportEnergyDelta: energyResponse.data.energyDetails.meters.find((i) => i.type == 'FeedIn').values[0]?.value,
+			exportPowerAverage: powerResponse.data.powerDetails.meters.find((i) => i.type == 'FeedIn').values[0]?.value,
+		}
 	}
 
 	catch (e) {
 		console.log(e);
-	}
-
-	const data = {
-		productionEnergyDelta: energyResponse.data.energyDetails.meters.find((i) => i.type == "Production").values[0].value,
-		consumptionEnergyDelta: energyResponse.data.energyDetails.meters.find((i) => i.type == "Consumption").values[0].value,
-		productionPowerAverage: powerResponse.data.powerDetails.meters.find((i) => i.type == "Production").values[0].value,
-		consumptionPowerAverage: powerResponse.data.powerDetails.meters.find((i) => i.type == 'Consumption').values[0].value,
-		importEnergyDelta: energyResponse.data.energyDetails.meters.find((i) => i.type == "Purchased").values[0].value,
-		importPowerAverage: powerResponse.data.powerDetails.meters.find((i) => i.type == 'Purchased').values[0].value,
-		exportEnergyDelta: energyResponse.data.energyDetails.meters.find((i) => i.type == 'FeedIn').values[0].value,
-		exportPowerAverage: powerResponse.data.powerDetails.meters.find((i) => i.type == 'FeedIn').values[0].value,
 	}
 
 	// Get the house power and solar panel devices, which are created when the app is first installed.
