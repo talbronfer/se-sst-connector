@@ -70,7 +70,7 @@ module.exports = async (context, _) => {
 			capability: 'powerConsumptionReport',
 			attribute: 'powerConsumption',
 			value: {
-				power: importPowerAverage,
+				power: data.importPowerAverage,
 				energy: powerMeterStatus.components.main.powerConsumptionReport.powerConsumption.value.energy + data.importEnergyDelta,
 				deltaEnergy: data.importEnergyDelta,
 				start: start.toISOString(),
