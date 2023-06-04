@@ -138,10 +138,10 @@ module.exports = async (context, _) => {
 			capability: 'powerConsumptionReport',
 			attribute: 'powerConsumption',
 			value: {
-				power: solarWatts,
+				power: data.productionPowerAverage,
 				energy: (powerMeterStatus.components.main.powerConsumptionReport ?
 					powerMeterStatus.components.main.powerConsumptionReport.powerConsumption.value.energy : 0) + data.productionEnergyDelta,
-				deltaEnergy: productionEnergyDelta,
+				deltaEnergy: data.productionEnergyDelta,
 				start: start.toISOString(),
 				end: end.toISOString()
 			}
