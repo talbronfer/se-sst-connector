@@ -30,6 +30,7 @@ module.exports = async (context, _) => {
 			exportEnergyDelta: energyResponse.data.energyDetails.meters.find((i) => i.type == 'FeedIn').values[0]?.value,
 			exportPowerAverage: powerResponse.data.powerDetails.meters.find((i) => i.type == 'FeedIn').values[0]?.value,
 		}
+		console.log(data);
 	}
 
 	catch (e) {
