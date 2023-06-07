@@ -63,7 +63,7 @@ module.exports = async (context, _) => {
 			capability: 'energyMeter',
 			attribute: 'energy',
 			value: powerMeterStatus.components.main.energyMeter.energy.value + data.consumptionEnergyDelta,
-			unit: 'kWh'
+			unit: 'Wh'
 		},
 		{
 			component: 'main',
@@ -82,7 +82,7 @@ module.exports = async (context, _) => {
 			capability: 'energyMeter',
 			attribute: 'energy',
 			value: powerMeterStatus.components.component1.energyMeter.energy.value + data.exportEnergyDelta,
-			unit: 'kWh'
+			unit: 'Wh'
 		},
 		{
 			component: 'component1',
@@ -101,7 +101,7 @@ module.exports = async (context, _) => {
 			capability: 'energyMeter',
 			attribute: 'energy',
 			value: powerMeterStatus.components.component2.energyMeter.energy.value + data.consumptionEnergyDelta,
-			unit: 'kWh'
+			unit: 'Wh'
 		},
 		{
 			component: 'component2',
@@ -131,7 +131,7 @@ module.exports = async (context, _) => {
 			capability: 'energyMeter',
 			attribute: 'energy',
 			value: solarPanelStatus.components.main.energyMeter.energy.value + data.productionEnergyDelta,
-			unit: 'kWh'
+			unit: 'Wh'
 		},
 		{
 			component: 'main',
