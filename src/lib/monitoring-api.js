@@ -1,5 +1,5 @@
 const axios = require('axios');
-const SITE_ID = process.env.site_id;
+const SITE_ID = process.env.SITE_ID;
 const API_KEY = process.env.API_KEY;
 
 const client = axios.create({ baseUrl : 'https://monitoringapi.solaredge.com'  });
